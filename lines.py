@@ -2,34 +2,40 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.polynomial.polynomial import polyfit
+from numpy.random import normal
 from math import *
 from random import random
-
-def rand(x,ymin=0,ymax=1):
-    return random()*(ymax-ymin)+ymin
-
-def linespace(function,xmin=0,xmax=10,ymin=0,ymax=1, inputs=None):
-    if inputs is None: yvar=range(xmin,xmax)
-    return [function(x,ymin,ymax) for x in inputs]
-
-def axies(x,y):
-    return { 'y': y, 'x': x }
-
-def plotLine(plotter, m, inputs, b):
-    plotter.plot(inputs,[m*x+b for x in inputs])
-
-def bruce(inputs=[-10,-9,-8,8,9,10],ymin=-1,ymax=1):
-    xmin=min(inputs)
-    xmax=min(inputs)
-    outputs=linespace(rand,xmin,xmax,inputs=inputs)
-    outputs[0]=0
-    for i in inputs:
-        plt.plot([i,i],[ymin,ymax], 'g')
-    plt.plot(inputs, outputs, marker='o', linestyle='None')
-    b,m=polyfit(inputs,outputs, 1)
-    plotLine(plt, m, inputs, b)
-    plt.title("Line of best fit y= %.3f x + %.3f"%(m,b))
-    plt.show()
+from utility import *
 
 
-bruce()
+def iterate(y, counter):
+    if counter is 1: return [y]
+    return [y]+iterate( normal(y,1), counter-1 )
+
+def sim(inputs):
+    return iterate( 0, len(inputs) )
+        
+def process(x,y,counter=0):    
+    if counter is 0: return y
+    return process(x,y+sim(x),counter-1)
+
+def init(plates, events):
+    x=[i%plates for i in range(events*plates)]
+    y=process(range(plates),[],counter=events)
+    return x,y
+
+
+
+plates=9
+events=100
+x,y=init(plates,events)
+
+plt.plot(x,y, marker='.', linestyle='None')
+plt.show()
+
+#analize
+
+
+#b,m=polyfit(inputs,outputs, 1)
+#b,m=plotLine(plt, inputs, outputs)
+#plt.title("Line of best fit y= %.3f x + %.3f"%(m,b))
