@@ -6,14 +6,16 @@ from numpy.random import normal
 from math import *
 from random import random
 from utility import *
+import sys, resource
+
 
 
 def iterate(y, counter):
-    if counter is 1: return [y]
-    return [y]+iterate( normal(y,1), counter-1 )
+    if counter is 0: return y
+    return iterate( y+[normal(y[-1],1) ], counter-1 )
 
 def sim(inputs):
-    return iterate( 0, len(inputs) )
+    return iterate( [0], len(inputs)-1 )
         
 def process(x,y,counter=0):    
     if counter is 0: return y
@@ -27,15 +29,12 @@ def init(plates, events):
 
 
 plates=9
-events=100
+events=1000
+#resource.setrlimit(resource.RLIMIT_STACK, (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+#sys.setrecursionlimit=plates*events
+
 x,y=init(plates,events)
 
 plt.plot(x,y, marker='.', linestyle='None')
 plt.show()
 
-#analize
-
-
-#b,m=polyfit(inputs,outputs, 1)
-#b,m=plotLine(plt, inputs, outputs)
-#plt.title("Line of best fit y= %.3f x + %.3f"%(m,b))
