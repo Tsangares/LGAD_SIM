@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy import linspace
 from numpy.polynomial.polynomial import polyfit
 from numpy.random import normal
 from math import *
@@ -8,50 +9,31 @@ from utility import *
 import sys, resource, json
 
 
-def iterate(y=[0], counter=0, std=1):
+def getTrack(plates, y=[0], counter=None):
+    if counter is None: counter=len(plates)-1
     if counter is 0: return y
-    return iterate( y+[normal(y[-1],std) ], counter-1 )
-
-def getTrackerHits(plates, events):
-    x=[i%plates for i in range(events*plates)]
-    y=[]
-    for i in range(events): y+=iterate( [0], plates-1 )
-    return x,y
-
-#`position` is the position of the sensor plate.
-def getSensorHits(plates, events, position=4):
-    vals=[]
-    for i in range(events):
-        x=range(plates)
-        y=iterate(counter=plates-1)
-        vals.append(getVal(position,x,y))
-    return vals
+    return getTrack( plates, y+[normal(y[-1],plates[counter]) ], counter-1 )
 
 def getSimulationData(plates, events, position=4):
+    x=[i%len(plates) for i in range(events*len(plates))]
+    y=[]
     vals=[]
-    _x=[]
-    _y=[]
     for i in range(events):
-        x=range(plates)
-        y=iterate(counter=plates-1)
-        vals.append(getVal(position,x,y))
-        _x+=x
-        _y+=y
-    return vals, _x, _y
+        track=getTrack(plates)
+        vals.append(getVal(position,x[0:len(plates)],track))
+        y+=track
+    return vals, x, y
 
-plates=9
+plates=[1,1,1,1,1,1,1,1,1]
 events=10000
-total=plates*events
 
 vals,x,y=getSimulationData(plates,events)
-low=-10
-high=10
-bins=200
-plt.subplot(121)
-plt.hist(vals,[ i*(high-low)/bins+low for i in range(bins) ])
-plt.subplot(122)
-#plt.plot(vals,marker='o', linestyle='None')
-#plotLine(plt,x,y)
-plt.plot(x,y, marker='.', linestyle='None')
-plt.show()
 
+plt.subplot(121)
+
+plt.hist(vals,linspace(-10,10,200))
+
+plt.subplot(122)
+plt.plot(x,y, marker='.', linestyle='None')
+
+plt.show()
