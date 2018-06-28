@@ -24,7 +24,7 @@ def getSensorHits(plates, events, position=4):
     for i in range(events):
         x=range(plates)
         y=iterate(counter=plates-1)
-        val.append(getVal(position,x,y))
+        vals.append(getVal(position,x,y))
     return vals
 
 def getSimulationData(plates, events, position=4):
@@ -34,19 +34,24 @@ def getSimulationData(plates, events, position=4):
     for i in range(events):
         x=range(plates)
         y=iterate(counter=plates-1)
-        val.append(getVal(position,x,y))
+        vals.append(getVal(position,x,y))
         _x+=x
         _y+=y
     return vals, _x, _y
 
 plates=9
-events=1000
+events=10000
 total=plates*events
 
-vals=getSensorHits(plates,events)
-
+vals,x,y=getSimulationData(plates,events)
+low=-10
+high=10
+bins=200
+plt.subplot(121)
+plt.hist(vals,[ i*(high-low)/bins+low for i in range(bins) ])
+plt.subplot(122)
 #plt.plot(vals,marker='o', linestyle='None')
 #plotLine(plt,x,y)
-#plt.plot(x,y, marker='.', linestyle='None')
+plt.plot(x,y, marker='.', linestyle='None')
 plt.show()
 
