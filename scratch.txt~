@@ -1,0 +1,5 @@
+def getTrack(plates, y=[0], counter=None):
+    if counter is None: counter=len(plates)-1
+    if counter is 0: return y
+    return getTrack( plates, y+[normal(y[-1],abs(plates[counter]['thickness'])) ], counter-1 )
+
