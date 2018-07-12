@@ -1,3 +1,19 @@
+W  THETA: With a resolution of 0.005183 we have an average risidual of 0.004246
+W  THETA: With a resolution of 0.005183 we have an average risidual of 0.004225
+W  THETA: With a resolution of 0.005183 we have an average risidual of 0.004237
+
+NO THETA: With a resolution of 0.005183 we have an average risidual of 0.004224
+NO THETA: With a resolution of 0.005183 we have an average risidual of 0.004229
+
+risidual for 100000 events without coulomb scattering
+With a resolution of 0.005183 we have an average risidual of 0.004237
+
+^Compare this with:
+With a resolution of 0.005200 we have an average risidual of 0.004264
+With a resolution of 0.005180 we have an average risidual of 0.004249
+With a resolution of 0.005160 we have an average risidual of 0.004227
+
+
 risidual for 100000 events
 With a resolution of 0.005400 we have an average risidual of 0.004404
 With a resolution of 0.005380 we have an average risidual of 0.004392

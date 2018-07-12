@@ -23,7 +23,7 @@ def getScatterRMS(thickness=THCK,velocity=BE):
 def getScatterAngle(thickness):
     rms=getScatterRMS()
     theta=normal(0,rms)
-    return theta
+    return 0
     
 def getPosition(positions,plates):
     out=[]
@@ -71,14 +71,15 @@ def getRMS(risiduals):
 plates=None
 with open("plates.json") as f:
     plates=json.loads(f.read())
-    
+
+print("No Theta")
 events=100000 # Number of Events
 sensor=470  # Sensor Position
 # Run Simulation
 goal_rms=.0042
 last_rms=0.0
-last_res=.0054
-for j in range(30):
+last_res=.0051826
+for j in range(1):
     ress=[]
     for i in range(1):
         vals, positions, real_track, measured_track, risiduals = getSimulationData( plates, events, sensor, res=last_res)
