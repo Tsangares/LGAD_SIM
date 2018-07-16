@@ -2,6 +2,10 @@ from numpy.polynomial.polynomial import polyfit
 import json
 from math import *
 
+def transform_to_origin(input):
+    minimum=min(input)
+    return [i-minimum for i in input]
+
 def loadPlateFile(url):
     with open("plates.json") as f:
         plates=json.loads(f.read())

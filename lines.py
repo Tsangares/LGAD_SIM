@@ -1,3 +1,4 @@
+
 import numpy as np
 from numpy import linspace
 from numpy.polynomial.polynomial import polyfit
@@ -70,6 +71,7 @@ def getSimulationData(plates, events=1, sensor=470, plt=None, res=None, toggle=N
 def simulate(events, sensor=470, config="plates.json", res=.0051826, plt=None, toggle=None, title=None, use=True):
     plates=loadPlateFile(config)
     vals, positions, real_track, measured_track, risiduals = getSimulationData( plates, events, sensor, res=res, toggle=toggle, use=use)
+    
     if plt is not None:
         plt.subplot(221)
         plt.plot(positions, real_track, marker='.', linestyle='None')
