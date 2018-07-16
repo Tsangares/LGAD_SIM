@@ -29,3 +29,19 @@ def getRisidual(x,y):
     test_point=m*x[1]+b
     return y[1]-test_point
 
+# Plotting for json formatted like:
+# [ [x_0,y_0],[x_1,y_1],...,[x_n,y_n] ]
+def generalPloting(file_name, title, xlabel,ylabel,plt):
+    data=None
+    with open(file_name) as f:
+        data=json.loads(f.read())
+    x=[datum[0] for datum in data]
+    y=[datum[1] for datum in data]
+    plt.plot(x,y, linestyle="None", marker="o")
+    b,m=plotLine(plt,x,y)
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.show()
+
+
