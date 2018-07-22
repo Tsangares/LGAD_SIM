@@ -20,8 +20,8 @@ def plotLine(plotter, inputs, outputs):
     plotter.plot(inputs,[m*x+b for x in inputs])
     return b,m
 
-def getTestPoint(test_point,x,y,plt=None):
-    b,m=polyfit(x,y, 1)
+def getTestPoint(y,x,test_point,toggle,plt=None):
+    b,m=polyfit(x[toggle[0]:toggle[1]],y[toggle[0]:toggle[1]],1)
     if plt is not None:
         plt.plot(x,[m*i+b for i in x])
     return m*test_point+b

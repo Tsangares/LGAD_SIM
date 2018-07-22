@@ -6,7 +6,11 @@ from numpy.random import normal
 from math import *
 from random import random
 from utility import *
+from multiprocessing import Pool as ThreadPool
+#from multiprocessing.dummy import Pool as ThreadPool 
+from itertools import repeat
 import sys, resource, json
+import timeit
 #7.6*10**-4
 '''
 Run the simulation with a .1 radiation length for the scoring plane.
@@ -40,53 +44,64 @@ def getScatterAngle(thickness, use=True):
     theta=normal(0,rms)
     return theta
     
-def getPosition(positions,plates, use=True):
+def getPosition(positions,radlens, use=True):
     track=[]
     theta=0
     previous_x=0
     y=0
-    for x,plate in zip(positions,plates):
+    for x,radlen in zip(positions,radlens):
         d=x-previous_x
         y+=d*tan(theta)
         track.append(y)
-        theta+=getScatterAngle(plate['radlen'], use)
+        theta+=getScatterAngle(radlen, use)
         previous_x=x
     return track
 
-def getMeasurement(real_track, plates, res=None):
-    if res is None:
-        return [ normal(y,plate['resolution']) for y,plate in zip(real_track, plates) ]
-    else:
-        return [ normal(y,res) for y in real_track ] 
+def getMeasurement(real_track, res):
+    return [ normal(y,res) for y in real_track ] 
 
+def tick(pos, radlens, use, res, sensor, toggle):
+    real=getPosition(pos,radlens,use)
+    measured=getMeasurement(real,res)
+    val=getTestPoint(measured,pos,sensor,toggle)
+    risidual=getRisidual(pos,real,measured,sensor,toggle)
+    return real,measured,val,risidual
+    
 
 def getSimulationData(plates, events=1, sensor=470, plt=None, res=None, toggle=None, use=True):
+    start = timeit.default_timer()
     if toggle is None: toggle=(0,len(plates))
+    if res is None: raise("Dont leave res None for now.")
     positions=[ plate['position'] for plate in plates ]
     real_tracks=[]
     measured_tracks=[]
     vals=[]
     risiduals=[]
-    
-    for e in range(events):
-        start=e*len(plates)
-        end=e*len(plates)+len(plates)
-        real_tracks+=getPosition(positions, plates, use) # Start with a straight line
-        measured_tracks+=getMeasurement(real_tracks[start:end],plates,res)
-        if plt is not None and e%int(events/100) is 0:
-            _plt=plt
-        else:
-            _plt=None
-        vals.append(getTestPoint(sensor,positions[toggle[0]:toggle[1]],measured_tracks[start:end][toggle[0]:toggle[1]],plt=_plt))
-        risiduals.append(getRisidual(positions,real_tracks[start:end],measured_tracks[start:end], sensor, toggle))
-    x=[]
-    for i in range(events): x+=positions.copy()
-    
-    return vals, x, real_tracks, measured_tracks, risiduals
+    threads=8
+    pool=ThreadPool(threads)
+    radlens=[plate['radlen'] for plate in plates]
+    ress=[plate['resolution'] for plate in plates]
+    pos=[positions for i in range(events)]
+
+    with ThreadPool(threads) as pool:
+        real_tracks=pool.starmap(getPosition, zip(pos,repeat(radlens),repeat(use)))
+
+    with ThreadPool(threads) as pool:
+        measured_tracks=pool.starmap(normal, zip(real_tracks,repeat(ress)))
+
+    with ThreadPool(threads) as pool:
+        vals=pool.starmap(getTestPoint,zip(measured_tracks,repeat(positions),repeat(sensor), repeat(toggle)))
+        
+    with ThreadPool(threads) as pool:
+        risiduals=pool.starmap(getRisidual, zip(pos,real_tracks,measured_tracks, repeat(sensor), repeat(toggle)))
+        
+    stop  = timeit.default_timer()
+    print("Completed %s events in %.04f secconds"%(events,stop-start))
+    return vals, pos, real_tracks, measured_tracks, risiduals
 
 def simulate(events, sensor=470, config="plates.json", res=.0051826, plt=None, toggle=None, title=None, use=True):
     plates=loadPlateFile(config)
-    vals, x, real_tracks, measured_tracks, risiduals = getSimulationData( plates, events, sensor, res=res, toggle=toggle, use=use, plt=plt)
+    vals, x, real_tracks, measured_tracks, risiduals = getSimulationData( plates, events, sensor, res=res, toggle=toggle, use=use)
     return getRMS(risiduals)
 
     
