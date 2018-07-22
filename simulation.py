@@ -57,8 +57,8 @@ def getPosition(positions,radlens, use=True):
         previous_x=x
     return track
 
-def getMeasurement(real_track, res):
-    return [ normal(y,res) for y in real_track ] 
+def getMeasurement(real_track, resolution):
+    return [ normal(y,res) for y,res in zip(real_track,resolution) ] 
 
 def tick(pos, radlens, use, res, sensor, toggle):
     real=getPosition(pos,radlens,use)
@@ -68,40 +68,27 @@ def tick(pos, radlens, use, res, sensor, toggle):
     return real,measured,val,risidual
     
 
-def getSimulationData(plates, events=1, sensor=470, plt=None, res=None, toggle=None, use=True):
+def getSimulationData(plates, events=1, sensor=470, plt=None, toggle=None, use=True, threads=8, verbose=True):
     start = timeit.default_timer()
+
     if toggle is None: toggle=(0,len(plates))
-    if res is None: raise("Dont leave res None for now.")
     positions=[ plate['position'] for plate in plates ]
-    real_tracks=[]
-    measured_tracks=[]
-    vals=[]
-    risiduals=[]
-    threads=8
-    pool=ThreadPool(threads)
-    radlens=[plate['radlen'] for plate in plates]
-    ress=[plate['resolution'] for plate in plates]
+    radlens=[ plate['radlen'] for plate in plates ]
+    res=[ plate['resolution'] for plate in plates ]
     pos=[positions for i in range(events)]
-
+    
     with ThreadPool(threads) as pool:
-        real_tracks=pool.starmap(getPosition, zip(pos,repeat(radlens),repeat(use)))
-
-    with ThreadPool(threads) as pool:
-        measured_tracks=pool.starmap(normal, zip(real_tracks,repeat(ress)))
-
-    with ThreadPool(threads) as pool:
-        vals=pool.starmap(getTestPoint,zip(measured_tracks,repeat(positions),repeat(sensor), repeat(toggle)))
+        results=pool.starmap(tick,zip(pos,repeat(radlens),repeat(use),repeat(res),repeat(sensor),repeat(toggle)))
         
-    with ThreadPool(threads) as pool:
-        risiduals=pool.starmap(getRisidual, zip(pos,real_tracks,measured_tracks, repeat(sensor), repeat(toggle)))
-        
-    stop  = timeit.default_timer()
-    print("Completed %s events in %.04f secconds"%(events,stop-start))
-    return vals, pos, real_tracks, measured_tracks, risiduals
+    stop = timeit.default_timer()
+    if verbose: print("Completed %s events in %.04f secconds"%(events,stop-start))
+    
+    return [datum[3] for datum in results]
+#    return vals, pos, real_tracks, measured_tracks, risiduals
 
 def simulate(events, sensor=470, config="plates.json", res=.0051826, plt=None, toggle=None, title=None, use=True):
     plates=loadPlateFile(config)
-    vals, x, real_tracks, measured_tracks, risiduals = getSimulationData( plates, events, sensor, res=res, toggle=toggle, use=use)
+    risiduals = getSimulationData( plates, events, sensor, toggle=toggle, use=use)
     return getRMS(risiduals)
 
     

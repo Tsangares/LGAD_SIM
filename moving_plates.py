@@ -24,24 +24,24 @@ _both_plates=[]
 _front_plates=[]
 _select_plates=[]
 
-events=50000
+events=1000
 times=[]
 for test in test_range:
     start = timeit.default_timer()
     use_coulomb=True
-    front_plates.append(simulate(events=events,sensor=test,plt=None,toggle=(0,3), use=use_coulomb))
-    select_plates.append(simulate(events=events,sensor=test,plt=None,toggle=(1,3), use=use_coulomb))
-    both_plates.append(simulate(events=events,sensor=test,plt=None,toggle=None, use=use_coulomb))
+    front_plates.append(simulate(events=events,sensor=test,toggle=(0,3), use=use_coulomb))
+    select_plates.append(simulate(events=events,sensor=test,toggle=(1,3), use=use_coulomb))
+    both_plates.append(simulate(events=events,sensor=test,toggle=None, use=use_coulomb))
     use_coulomb=False
-    _front_plates.append(simulate(events=events,sensor=test,plt=None,toggle=(0,3), use=use_coulomb))
-    _select_plates.append(simulate(events=events,sensor=test,plt=None,toggle=(1,3), use=use_coulomb))
-    _both_plates.append(simulate(events=events,sensor=test,plt=None,toggle=None, use=use_coulomb))
+    _front_plates.append(simulate(events=events,sensor=test,toggle=(0,3), use=use_coulomb))
+    _select_plates.append(simulate(events=events,sensor=test,toggle=(1,3), use=use_coulomb))
+    _both_plates.append(simulate(events=events,sensor=test,toggle=None, use=use_coulomb))
     stop = timeit.default_timer()
     times.append(stop-start)
     mean=sum(times)/len(times)
     timeLeft=mean*(len(test_range)-len(times))
     print("Finised sensor at %.04fmm in %.03f secconds with %.03f secconds left." %(test,(stop-start),timeLeft))
-
+print("Finished gathering data.")
     
 plt.subplot(121)
 plt.plot(test_range,select_plates, linestyle='None', marker='o', label='Front Plates 2,3')
