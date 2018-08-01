@@ -1,7 +1,7 @@
 from numpy.polynomial.polynomial import polyfit
 import json
 from math import *
-from operator import itemgetter
+from operator import itemgetter, attrgetter
 
 def cmToRad(input):
     return input/9.370 #Silicon had rad length of 9.37cm
@@ -20,7 +20,7 @@ def plotLine(plotter, inputs, outputs):
     plotter.plot(inputs,[m*x+b for x in inputs])
     return b,m
 
-def getTestPoint(y,x,test_point,toggle,plt=None):
+def getTestPoint(x,y,test_point,toggle,plt=None):
     b,m=polyfit(x[toggle[0]:toggle[1]],y[toggle[0]:toggle[1]],1)
     if plt is not None:
         plt.plot(x,[m*i+b for i in x])
@@ -37,11 +37,26 @@ def getRMS(risiduals):
     b=sum(risiduals)
     b=b*b
     c=sum([x*x for x in risiduals])/a
+    print((b/a)**2)
     return sqrt(c - (b/a)**2)
 
 #this is going to get messy, I don't want to have the sensor plate be defined as a plate because it is moving around a lot, so instead it finds a line between the two nearest plates and assumes a straight path between them.
-def getRisidual(x,real_tracks,measured_tracks,test_point, toggle):
+def getRisidual( x, measured_tracks, test_point, toggle, real_tracks ):
     b,m=polyfit(x[toggle[0]:toggle[1]],measured_tracks[toggle[0]:toggle[1]], 1)
+<<<<<<< Updated upstream
+=======
+    _x=x+[test_point]
+    #x.append(test_point)#x is not const and this is changing the data structure.
+    _real=real_tracks+[None]
+    points=sorted(zip(_x,_real),key=itemgetter(0))
+    real_y=0
+    for i,p in enumerate(points):
+        if p[0] is test_point and p[1] is None:
+            dy=(points[i-1][1]-points[i+1][1])
+            dx=(points[i-1][0]-points[i+1][0])
+            slope=dy/dx
+            real_y=slope*(test_point-points[i-1][0]) + points[i-1][1]
+>>>>>>> Stashed changes
     pred_y=m*test_point+b
     for point,real_y in zip(x,real_tracks):
         if point==test_point:
