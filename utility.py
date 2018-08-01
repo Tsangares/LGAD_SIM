@@ -43,20 +43,6 @@ def getRMS(risiduals):
 #this is going to get messy, I don't want to have the sensor plate be defined as a plate because it is moving around a lot, so instead it finds a line between the two nearest plates and assumes a straight path between them.
 def getRisidual( x, measured_tracks, test_point, toggle, real_tracks ):
     b,m=polyfit(x[toggle[0]:toggle[1]],measured_tracks[toggle[0]:toggle[1]], 1)
-<<<<<<< Updated upstream
-=======
-    _x=x+[test_point]
-    #x.append(test_point)#x is not const and this is changing the data structure.
-    _real=real_tracks+[None]
-    points=sorted(zip(_x,_real),key=itemgetter(0))
-    real_y=0
-    for i,p in enumerate(points):
-        if p[0] is test_point and p[1] is None:
-            dy=(points[i-1][1]-points[i+1][1])
-            dx=(points[i-1][0]-points[i+1][0])
-            slope=dy/dx
-            real_y=slope*(test_point-points[i-1][0]) + points[i-1][1]
->>>>>>> Stashed changes
     pred_y=m*test_point+b
     for point,real_y in zip(x,real_tracks):
         if point==test_point:
