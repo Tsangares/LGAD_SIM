@@ -1,0 +1,26 @@
+#! /usr/bin/env python
+import argparse
+types=['sensor','single']
+parser = argparse.ArgumentParser(description="LGAD sensor simulator.")
+parser.add_argument('type', metavar='type', type=str, nargs='?', help='Type of simulation to run, acceptable values are %s. Default is "single"'%types)
+parser.add_argument('-n','-e', metavar="events", type=int, nargs='?', help="Number of events to run. Default is 300", default=300)
+parser.add_argument('--no-scatter', dest="scatter", action="store_false", help="Enable coulomb scattering. Default True", default=True)
+parser.add_argument('--sensor-thickness', dest="thickness", type=float, help="Thickness of the sensor in radiation lengths, default is zero.", default=0.0)
+parser.add_argument('--sensor-position', dest="pos", type=float, help="The x positions of the sensor or scoring plane. Default is 405.", default=405)
+args=parser.parse_args()
+if args.type is None:
+    print("No type was given, defaulting to single.")
+elif args.type == "single":
+    try:
+        from lgad.simulation import simulate
+    except Exception:
+        from simulation import simulate
+    simulate(events=args.n, plt=True, use=args.scatter, sensor=args.pos, sensor_radlen=args.thickness)
+elif args.type == "sensor":
+    try:
+        from lgad.moving_plates import moving_plates
+    except Exception:
+        from moving_plates import moving_plates
+    moving_plates(events=args.n, sensor_radlen=args.thickness)
+else: 
+    print("Unknown type given. Please use one of the following: %s"%(types))
