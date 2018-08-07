@@ -63,6 +63,14 @@ def getPosition(positions,radlens, use=True):
         previous_x=x
     return track
 
+class Result:
+    def __init__(self,realTrack,measurement,score,risidual,positions):
+        self.realTrack=realTrack
+        self.measurement=measurement
+        self.score=score
+        self.risidual=risidual
+        self.positions=positions
+
 def getMeasurement(real_track, resolution):
     return [ normal(y,res) for y,res in zip(real_track,resolution) ] 
 
@@ -71,21 +79,27 @@ def getEvent(positions, radlengths, resolutions, testPoint, togglePlates, useCou
     measurement = getMeasurement( realTrack, resolutions)
     score       = getTestPoint( positions, measurement, testPoint, togglePlates )
     risidual    = getRisidual ( positions, measurement, testPoint, togglePlates , realTrack)
-    return realTrack,measurement,score,risidual,positions
+    return Result(realTrack,measurement,score,risidual,positions)
 
 #scoringPlane is of the type Plate.
 def simulate(scoringPlane, events=1,plates=None, resolution=.0051826, plt=None, toggle=None, title=None, use=True, threads=8):
     if plates is None:
         plates=getPlates("plates.json", scoringPlane)
     if toggle is None: toggle=(0,len(plates))
+    
+    #PLZ Simplify
     positions=[ plate.pos for plate in plates ]
     radlens=[ plate.radlen for plate in plates ]
     res=[ resolution for plate in plates ]
-    pos=[positions for i in range(events)]
+    pos=[ positions for i in range(events) ]
+    # //
+    
     params=zip(pos,repeat(radlens),repeat(res),repeat(scoringPlane.pos),repeat(toggle),repeat(use))
     with ThreadPool(threads) as pool:
         results=pool.starmap(getEvent,params)
-    risiduals = [datum[3] for datum in results]
+    #Currently debugging a lot of risidual RMS so it is prioriy;
+    #Thats why simulate() retuns a tuple instead of a single object.
+    risiduals = [result.risidual for result in results]
     if plt is not None:
         plotData(results, sensor, events, res[0])
     return results, getRMS(risiduals)

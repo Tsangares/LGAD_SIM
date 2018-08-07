@@ -42,7 +42,7 @@ def batchSim(inputs,events,testRange,radlength,config):
         timeLeft=mean*(len(inputs)-len(times))
         print("Finised sensor at %.04fmm in %.03f seconds with %.03f seconds left." %(test,(stop-start),timeLeft))
     print("Finished gathering data.")
-    return outputs
+    return outputs #Array of RMS values [float,float,...]
 
 def prepareBatch(testRange, inputs, events, sensor_radlen,use,config):
     testRange=linspace(testRange[0],testRange[1],20)

@@ -44,11 +44,11 @@ def getTestPoint(x,y,testPoint,toggle,plt=None):
     if plt is not None:
         plt.plot(x,[m*i+b for i in x])
     return m*testPoint+b
-'''
 
-a= sum 1
+'''
+a=sum 1
 b=sum x
-c=sumx^2
+c=sum x^2
 rms = sqrt((b/a)^2 - c/a)
 '''
 def getRMS(risiduals):
@@ -59,22 +59,28 @@ def getRMS(risiduals):
     return sqrt(c - (b/a)**2)
 
 #currently going to assume, 3 plates on the left, 3 on the right with a sensor in the middle.
-def getAdvancedRMS(results, allPlates):
-    plates=[]
-    scoringPlane=None
-    for plate in allPlates:
-        if plate.isScoringPlane: scoringPlane=plate
-        else: plates.append(plate)
+def getAdvancedRMS(results, plates, scoringPlane):
     mid=int(len(plates)/2)
     left=plates[:mid]
     right=plates[mid:]
-    leftSigma=getRMS(left)
-    rightRigma=getRMS(right)
+
+    #Calculating risiduals uses the functions:
+    # - getTestPoint(x,y,testPoint,toggle,plt=None)
+    # - getRisidual( x, measured_tracks, testPoint, toggle, real_tracks )
+    #Recalculate the risiduals by using getTestPoint with custom toggle
+    #Then the same with getRisidual
+
+    leftRisiduals=[getRisidual(result) for result in results]
+    rightRisiduals=None
+    # //
+    
+    leftSigma=getRMS(leftRisiduals)
+    rightRigma=getRMS(rightRisiduals)
     
     return
     
 
-#this is going to get messy, I don't want to have the sensor plate be defined as a plate because it is moving around a lot, so instead it finds a line between the two nearest plates and assumes a straight path between them.
+
 def getRisidual( x, measured_tracks, testPoint, toggle, real_tracks ):
     b,m=polyfit(x[toggle[0]:toggle[1]],measured_tracks[toggle[0]:toggle[1]], 1)
     pred_y=m*testPoint+b
