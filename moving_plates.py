@@ -12,6 +12,7 @@ except Exception:
 
 def plotData(testRange,data,radlen,use,events):
     total=[]
+    #Add error handling if the data is of the wrong format.
     for datum,label in data:
         total+=(datum)
         plt.plot(testRange,datum,linestyle='None', marker='o', label=label)
@@ -49,12 +50,12 @@ def prepareBatch(testRange, inputs, events, sensor_radlen,use,config):
     results=batchSim(inputs,events,testRange,sensor_radlen,config)
     if use is None:
         mid=int(len(results)/2)
-        dataSet1=[(results[mid:],str(toggle))]
-        dataSet2=[(results[:mid],str(toggle))]
+        dataSet1=[(res,toggle[1]) for res,toggle in zip(results[:mid],inputs[:mid])]
+        dataSet2=[(res,toggle[1]) for res,toggle in zip(results[mid:],inputs[mid:])]
         plt.subplot(121)
-        plotData(testRange,[dataSet1],sensor_radlen,use,events)
+        plotData(testRange,dataSet1,sensor_radlen,use,events)
         plt.subplot(122)
-        plotData(testRange,[dataSet2],sensor_radlen,use,events)
+        plotData(testRange,dataSet2,sensor_radlen,use,events)
     else:
         data=[(res,toggle[1]) for res,toggle in zip(results,inputs)]
         plotData(testRange,data,sensor_radlen,use,events)
@@ -70,12 +71,15 @@ def moving_plate(plate_min=305, plate_max=635, events=300, sensor_radlen=0.0,ver
     prepareBatch((plate_min,plate_max),inputs,events,sensor_radlen,None,use,config,)
     
 def moving_plates(plate_min=305, plate_max=635, events=300, sensor_radlen=0.0,verbose=True, write_to_file=False,use=None,config="plates.json"):
+    plates=loadPlateFile(config)
+    mid=int(len(plates)/2)
+    size=len(plates)
     if use is None:
         inputs=[
-            (True,(0,3)), (True,(1,3)), (True,(0,11)),
-            (False,(0,3)),(False,(1,3)),(False,(0,11)),
+            (True,(None,mid)), (True,(1,3)), (True,(None,None)),
+            (False,(None,mid)),(False,(1,3)),(False,(None,None)),
         ]
     else:
-        inputs=[(use,(0,3)),(use,(1,3)),(use,(0,11))]
+        inputs=[(use,(None,mid)),(use,(1,3)),(use,(None,None))]
     prepareBatch((plate_min,plate_max),inputs,events,sensor_radlen,use,config)
 

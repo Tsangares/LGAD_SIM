@@ -25,10 +25,9 @@ def loadPlateFile(url):
     return [Plate(plate['position'],plate['radlen'],False) for plate in plates]
 
 def prepPlates(plates,scoringPlane):
-    output=[plate for plate in plates]
-    output.append(scoringPlane)
+    plates.append(scoringPlane)
     plates=sorted(plates, key=lambda ele: ele.pos)
-    return output
+    return plates
 
 def getPlates(config,scoringPlane):
     plates=loadPlateFile(config)
@@ -64,34 +63,29 @@ def getAdvancedRMS(results, plates, scoringPlane):
     mid=int(len(plates)/2)
     left=plates[:mid]
     right=plates[mid:]
-    #if len(left)==len(right) and left != right: print("yay!")
+
     #Calculating risiduals uses the functions:
     # - getTestPoint(x,y,testPoint,toggle,plt=None)
     # - getRisidual( x, measured_tracks, testPoint, toggle, real_tracks )
     #Recalculate the risiduals by using getTestPoint with custom toggle
     #Then the same with getRisidual
-    leftRisiduals=[]
-    rightRisiduals=[]
-    for result in results:
-        leftToggle=(None,mid)
-        rightToggle=(mid,None)
-        left=getRisidual(result.positions,result.measurement,scoringPlane.position, leftToggle,result.realTrack)
-        right=getRisidual(result.positions,result.measurement,scoringPlane.position, rightToggle,result.realTrack)
-        leftRisiduals.append(left)
-        rightRisiduals.append(right)
-
+    risiduals={
+        'left': [],
+        'right': []
+        }
+    risiduals['left']=[getRisidual(result.positions,result.measurement,scoringPlane.posion, (0,mid),result.realTrack) for result in results]
+    risiduals['right']=[getRisidual(result.positions,result.measurement,scoringPlane.posion, (mid,len(plates)),result.realTrack) for result in results]
     # //
+    
     leftSigma=getRMS(leftRisiduals)
-    rightSigma=getRMS(rightRisiduals)
-    return leftSigma, rightSigma
+    rightRigma=getRMS(rightRisiduals)
+    
+    return
     
 
 
 def getRisidual( x, measured_tracks, testPoint, toggle, real_tracks ):
-    inx=x[toggle[0]:toggle[1]]
-    iny=measured_tracks[toggle[0]:toggle[1]]
-    #print(len(inx),len(iny))
-    b,m=polyfit(inx,iny, 1)
+    b,m=polyfit(x[toggle[0]:toggle[1]],measured_tracks[toggle[0]:toggle[1]], 1)
     pred_y=m*testPoint+b
     for point,real_y in zip(x,real_tracks):
         if point==testPoint:
@@ -100,7 +94,7 @@ def getRisidual( x, measured_tracks, testPoint, toggle, real_tracks ):
 
 # Plotting for json formatted like:
 # [ [x_0,y_0],[x_1,y_1],...,[x_n,y_n] ]
-def generalPlotting(title, xlabel,ylabel,plt,file_name=None):
+def generalPloting(file_name, title, xlabel,ylabel,plt):
     data=None
     with open(file_name) as f:
         data=json.loads(f.read())

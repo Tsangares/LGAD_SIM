@@ -86,7 +86,6 @@ def simulate(scoringPlane, events=1,plates=None, resolution=.0051826, plt=None, 
     if plates is None:
         plates=getPlates("plates.json", scoringPlane)
     if toggle is None: toggle=(0,len(plates))
-    
     #PLZ Simplify
     positions=[ plate.pos for plate in plates ]
     radlens=[ plate.radlen for plate in plates ]
@@ -95,20 +94,24 @@ def simulate(scoringPlane, events=1,plates=None, resolution=.0051826, plt=None, 
     # //
     
     params=zip(pos,repeat(radlens),repeat(res),repeat(scoringPlane.pos),repeat(toggle),repeat(use))
+    
     with ThreadPool(threads) as pool:
         results=pool.starmap(getEvent,params)
+        
     #Currently debugging a lot of risidual RMS so it is prioriy;
     #Thats why simulate() retuns a tuple instead of a single object.
     risiduals = [result.risidual for result in results]
     if plt is not None:
-        plotData(results, sensor, events, res[0])
+        plotSingle(results, scoringPlane, events, resolution)
+        
     return results, getRMS(risiduals)
 
-def plotData(res, sensor, events, resolution):
+def plotSingle(res, scoringPlane, events, resolution):
     import matplotlib.pyplot as plt
-    _positions=[datum[4] for datum in res]
-    _real_track=[datum[0] for datum in res]
-    _measured_track=[datum[1] for datum in res]
+    sensor=scoringPlane.position
+    _positions=[datum.positions for datum in res]
+    _real_track=[datum.realTrack for datum in res]
+    _measured_track=[datum.measurement for datum in res]
     positions=[]
     real_track=[]
     measured_track=[]
@@ -117,7 +120,7 @@ def plotData(res, sensor, events, resolution):
         positions+=_positions[i]
         real_track+=(_real_track[i])
         measured_track+=(_measured_track[i])
-    vals=[datum[2] for datum in res]
+    vals=[datum.score for datum in res]
 
     plt.subplot(221)
     plt.plot(positions, real_track, marker='.', linestyle='None')
@@ -142,5 +145,6 @@ def plotData(res, sensor, events, resolution):
     plt.annotate(xy=(.3,.8),s="%s Events"%events)
     plt.annotate(xy=(.3,.7),s="Sensor is at %smm"%sensor)
     plt.annotate(xy=(.3,.6),s="Resolution is %s"%resolution)
+    plt.annotate(xy=(.3,.5),s="Sensor Radlen is %.04f"%scoringPlane.radlen)
     plt.show()
 
