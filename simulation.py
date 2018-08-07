@@ -71,6 +71,7 @@ class Result:
         self.risidual=risidual
         self.positions=positions
 
+
 def getMeasurement(real_track, resolution):
     return [ normal(y,res) for y,res in zip(real_track,resolution) ] 
 
@@ -92,7 +93,6 @@ def simulate(scoringPlane, events=1,plates=None, resolution=.0051826, plt=None, 
     res=[ resolution for plate in plates ]
     pos=[ positions for i in range(events) ]
     # //
-    
     params=zip(pos,repeat(radlens),repeat(res),repeat(scoringPlane.pos),repeat(toggle),repeat(use))
     
     with ThreadPool(threads) as pool:

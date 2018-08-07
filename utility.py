@@ -27,7 +27,7 @@ def loadPlateFile(url):
 def prepPlates(plates,scoringPlane):
     output=[plate for plate in plates]
     output.append(scoringPlane)
-    plates=sorted(plates, key=lambda ele: ele.pos)
+    output=sorted(output, key=lambda ele: ele.pos)
     return output
 
 def getPlates(config,scoringPlane):
@@ -91,7 +91,8 @@ def getRisidual( x, measured_tracks, testPoint, toggle, real_tracks ):
     inx=x[toggle[0]:toggle[1]]
     iny=measured_tracks[toggle[0]:toggle[1]]
     #print(len(inx),len(iny))
-    b,m=polyfit(inx,iny, 1)
+    #    b,m=polyfit(inx,iny, 1)
+    b,m=polyfit(x[toggle[0]:toggle[1]],measured_tracks[toggle[0]:toggle[1]], 1)
     pred_y=m*testPoint+b
     for point,real_y in zip(x,real_tracks):
         if point==testPoint:
