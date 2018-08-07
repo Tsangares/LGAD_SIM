@@ -24,14 +24,11 @@ def loadPlateFile(url):
         plates=json.loads(f.read())
     return [Plate(plate['position'],plate['radlen'],False) for plate in plates]
 
-def prepPlates(plates,scoringPlane):
+def getPlates(config, scoringPlane):
+    plates=loadPlateFile(config)
     plates.append(scoringPlane)
     plates=sorted(plates, key=lambda ele: ele.pos)
     return plates
-
-def getPlates(config,scoringPlane):
-    plates=loadPlateFile(config)
-    return prepPlates(plates,scoringPlane)
 
 
 def plotLine(plotter, inputs, outputs):

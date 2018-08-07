@@ -4,7 +4,9 @@ types=['sensor','single']
 parser = argparse.ArgumentParser(description="LGAD sensor simulator.")
 parser.add_argument('type', metavar='type', type=str, nargs='?', help='Type of simulation to run, acceptable values are %s. Default is "single"'%types)
 parser.add_argument('-n','-e', metavar="events", type=int, nargs='?', help="Number of events to run. Default is 300", default=300)
+parser.add_argument('--toggle','-t', dest="toggle", metavar="toggle", type=int, nargs='+', help="Give the index range of plates to include in the line of best fit. Note: The scorin plane/sensor is included in this index. Give it in the form of a tuple of a closed set, like the command \"lgad -t 0 2\" will include plates, 0, 1 and 2 into the line of best fit.", default=None)
 parser.add_argument('--no-scatter', dest="scatter", action="store_false", help="Enable coulomb scattering. Default True", default=True)
+parser.add_argument('--scatter', dest="scatter", action="store_true", help="Enable coulomb scattering. Default True", default=True)
 parser.add_argument('--sensor-thickness', dest="thickness", type=float, help="Thickness of the sensor in radiation lengths, default is zero.", default=0.0)
 parser.add_argument('--sensor-position', dest="pos", type=float, help="The x positions of the sensor or scoring plane. Default is 405.", default=405)
 args=parser.parse_args()
@@ -18,9 +20,20 @@ elif args.type == "single":
     simulate(events=args.n, plt=True, use=args.scatter, sensor=args.pos, sensor_radlen=args.thickness)
 elif args.type == "sensor":
     try:
-        from lgad.moving_plates import moving_plates
+        from lgad.moving_plates import *
     except Exception:
-        from moving_plates import moving_plates
-    moving_plates(events=args.n, sensor_radlen=args.thickness)
+        from moving_plates import *
+    if args.toggle is None:
+        moving_plates(events=args.n, sensor_radlen=args.thickness, use=args.scatter)
+    else:
+        toggle=args.toggle
+        toggle[1]+=1
+        moving_plate(events=args.n, sensor_radlen=args.thickness, toggle=toggle, use=args.scatter)
+elif args.type == "thick":
+    try:
+        from lgad.thick_detector import *
+    except Exception:
+        from thick_detector import *
+    thick(events=args.n, sensor_radlen=args.thickness, toggle=None, use=args.scatter)
 else: 
     print("Unknown type given. Please use one of the following: %s"%(types))

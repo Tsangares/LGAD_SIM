@@ -1,0 +1,52 @@
+import matplotlib.pyplot as plt
+from numpy import linspace
+import json
+import timeit
+try:
+    from simulation import simulate
+    from utility import *
+except Exception:
+    from lgad.simulation import simulate
+    from lgad.utility import *
+
+    
+def thick(plate_min=305, plate_max=635, events=300, sensor_radlen=0.0,verbose=True, write_to_file=False, toggle=None, use=None, config="plates.json"):
+    test_range=linspace(plate_min,plate_max,20)
+    normal=[]
+    advanced=[]
+    times=[]
+    for test in test_range:
+        scoringPlane=Plate(test,sensor_radlen)
+        plates=getPlates(config, scoringPlane)
+        start = timeit.default_timer()
+        normal.append(simulate(scoringPlane,plates=plates,events=events,toggle=toggle, use=use)[1])
+        results,rms=simulate(scoringPlane,plates=plates,events=events,toggle=toggle, use=use)
+        advanced.append(getAdvancedRMS(results,plates))
+        stop = timeit.default_timer()
+        times.append(stop-start)
+        mean=sum(times)/len(times)
+        timeLeft=mean*(len(test_range)-len(times))
+        print("Finised sensor at %.04fmm in %.03f seconds with %.03f seconds left." %(test,(stop-start),timeLeft))
+    print("Finished gathering data.")
+    
+    if use is None: plt.subplot(121)
+    if use is None or use is True:
+        plt.plot(test_range,plates, linestyle='None', marker='o', label='Plates 1-6')
+        plt.xlabel("Scoring Plane Position (mm)")
+        plt.ylabel("RMS of the Risiduals (mm)")
+        plt.ylim([0, max(plates)*1.05])
+        plt.legend(loc='upper left')
+        plt.grid(True, alpha=.2)
+        plt.title("Scoring Plane with radlength %.02f  %s Events"%(sensor_radlen,events))
+        
+    if use is None: plt.subplot(122)
+    if use is None or use is False:
+        plt.plot(test_range,_plates, linestyle='None', marker='o', label='Plates 1-6')
+        plt.xlabel("Scoring Plane Position (mm)")
+        plt.ylabel("RMS of the Risiduals (mm)")
+        plt.ylim([0, max(_plates)*1.05])
+        plt.legend(loc='upper left')
+        plt.grid(True, alpha=.2)
+        plt.title("Scoring Plane with radlength %.03f, No Coulomb With %s Events"%(sensor_radlen,events))
+        
+    plt.show()

@@ -37,6 +37,7 @@ Plates are .0055/9.37 + 0.0050/28.6 = 7.6x10^-4 radlen
 
 Set resolution to zero, the RMS should grow by sqrt(2)*rms(plate1);
 '''
+        
 def getScatterRMS(thickness,velocity=BE):
     if thickness == 0: return 0
     v=velocity
@@ -65,30 +66,29 @@ def getPosition(positions,radlens, use=True):
 def getMeasurement(real_track, resolution):
     return [ normal(y,res) for y,res in zip(real_track,resolution) ] 
 
-def getEvent(positions, radlengths, resolutions, scoringPlane, togglePlates, useCoulomb):
+def getEvent(positions, radlengths, resolutions, testPoint, togglePlates, useCoulomb):
     realTrack   = getPosition ( positions, radlengths, useCoulomb )
     measurement = getMeasurement( realTrack, resolutions)
-    score       = getTestPoint( positions, measurement, scoringPlane, togglePlates )
-    risidual    = getRisidual ( positions, measurement, scoringPlane, togglePlates , realTrack)
+    score       = getTestPoint( positions, measurement, testPoint, togglePlates )
+    risidual    = getRisidual ( positions, measurement, testPoint, togglePlates , realTrack)
     return realTrack,measurement,score,risidual,positions
 
-def simulate(events=1, sensor=405, sensor_radlen=0.0,config="plates.json", res=.0051826, plt=None, toggle=None, title=None, use=True, threads=8):
-    sensor_pos=sensor
-    plates=loadPlateFile(config)
+#scoringPlane is of the type Plate.
+def simulate(scoringPlane, events=1,plates=None, resolution=.0051826, plt=None, toggle=None, title=None, use=True, threads=8):
+    if plates is None:
+        plates=getPlates("plates.json", scoringPlane)
     if toggle is None: toggle=(0,len(plates))
-    plates.append({'position': sensor_pos, 'radlen': sensor_radlen, 'resolution': plates[0]['resolution']})
-    plates=sorted(plates, key=lambda ele: ele['position'])
-    positions=[ plate['position'] for plate in plates ]
-    radlens=[ plate['radlen'] for plate in plates ]
-    res=[ plate['resolution'] for plate in plates ]
+    positions=[ plate.pos for plate in plates ]
+    radlens=[ plate.radlen for plate in plates ]
+    res=[ resolution for plate in plates ]
     pos=[positions for i in range(events)]
-    params=zip(pos,repeat(radlens),repeat(res),repeat(sensor),repeat(toggle),repeat(use))
+    params=zip(pos,repeat(radlens),repeat(res),repeat(scoringPlane.pos),repeat(toggle),repeat(use))
     with ThreadPool(threads) as pool:
         results=pool.starmap(getEvent,params)
     risiduals = [datum[3] for datum in results]
     if plt is not None:
         plotData(results, sensor, events, res[0])
-    return getRMS(risiduals)
+    return results, getRMS(risiduals)
 
 def plotData(res, sensor, events, resolution):
     import matplotlib.pyplot as plt
@@ -98,11 +98,13 @@ def plotData(res, sensor, events, resolution):
     positions=[]
     real_track=[]
     measured_track=[]
+
     for i in range(len(_real_track)):
         positions+=_positions[i]
         real_track+=(_real_track[i])
         measured_track+=(_measured_track[i])
     vals=[datum[2] for datum in res]
+
     plt.subplot(221)
     plt.plot(positions, real_track, marker='.', linestyle='None')
     plt.plot([sensor,sensor], [min(measured_track),max(measured_track)], 'r')
