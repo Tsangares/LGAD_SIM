@@ -29,11 +29,15 @@ From arXiv:1603.09669v2,
 the plates are:
  5.5e-3cm Silicon; radlen 9.37cm
  5.0e-3cm Kapton;  radlen 28.6cm
+ fiberglass; radlen ___cm?
 Plates are .0055/9.37 + 0.0050/28.6 = 7.6x10^-4 radlen
 '''
 
 
 '''
+Eight plates of 300-500 micron silicon evenly spaced.
+1/16" of fiberglass as the detector; with and without.
+
 
 Set resolution to zero, the RMS should grow by sqrt(2)*rms(plate1);
 '''
@@ -49,7 +53,7 @@ def getScatterAngle(thickness, use=True):
     rms=getScatterRMS(thickness)
     theta=normal(0,rms)
     return theta
-    
+#14.6MeV/p /sqrt(radlen)    
 def getPosition(positions,radlens, use=True):
     track=[]
     theta=0
@@ -83,9 +87,9 @@ def getEvent(positions, radlengths, resolutions, testPoint, togglePlates, useCou
     return Result(realTrack,measurement,score,risidual,positions)
 
 #scoringPlane is of the type Plate.
-def simulate(scoringPlane, events=1,plates=None, resolution=.0051826, plt=None, toggle=None, title=None, use=True, threads=8):
+def simulate(scoringPlane=None, events=1,plates=None, resolution=.0051826, plt=None, toggle=None, title=None, use=True, threads=8):
     if plates is None:
-        plates=getPlates("plates.json", scoringPlane)
+        raise Exception("Please supply the simulation with plates using the commands loadPlateFile, getPlates")
     if toggle is None: toggle=(0,len(plates))
     #PLZ Simplify
     positions=[ plate.pos for plate in plates ]
@@ -93,7 +97,9 @@ def simulate(scoringPlane, events=1,plates=None, resolution=.0051826, plt=None, 
     res=[ resolution for plate in plates ]
     pos=[ positions for i in range(events) ]
     # //
-    params=zip(pos,repeat(radlens),repeat(res),repeat(scoringPlane.pos),repeat(toggle),repeat(use))
+    sensorPosition=0
+    if scoringPlane is not None: sensorPosition=scoringPlane.pos
+    params=zip(pos,repeat(radlens),repeat(res),repeat(sensorPosition),repeat(toggle),repeat(use))
     
     with ThreadPool(threads) as pool:
         results=pool.starmap(getEvent,params)
@@ -108,7 +114,8 @@ def simulate(scoringPlane, events=1,plates=None, resolution=.0051826, plt=None, 
 
 def plotSingle(res, scoringPlane, events, resolution):
     import matplotlib.pyplot as plt
-    sensor=scoringPlane.position
+    if scoringPlane is not None:
+        sensor=scoringPlane.position
     _positions=[datum.positions for datum in res]
     _real_track=[datum.realTrack for datum in res]
     _measured_track=[datum.measurement for datum in res]
@@ -124,27 +131,31 @@ def plotSingle(res, scoringPlane, events, resolution):
 
     plt.subplot(221)
     plt.plot(positions, real_track, marker='.', linestyle='None')
-    plt.plot([sensor,sensor], [min(measured_track),max(measured_track)], 'r')
+    if scoringPlane is not None:
+        plt.plot([sensor,sensor], [min(measured_track),max(measured_track)], 'r')
     plt.title("Real Track")
     plt.ylabel("Hit Location (mm)")
     
     plt.subplot(222)
     plt.plot(positions, measured_track,marker='.', linestyle='None')
-    plt.plot([sensor,sensor], [min(measured_track),max(measured_track)], 'r')
+    if scoringPlane is not None:
+        plt.plot([sensor,sensor], [min(measured_track),max(measured_track)], 'r')
     plt.title("Measured Track")
     plt.xlabel("Plate Positions (mm)")
-    
-    plt.subplot(223)
-    plt.hist(vals,linspace(min(vals),max(vals),300))
-    plt.xlabel("Veritle Axis, Hit Location (mm)")
-    plt.ylabel("Number of Hits (count)")
-    #plt.title("Hits Line of Best Fit at x=%s"%sensor)
+    if scoringPlane is not None:
+        plt.subplot(223)
+        plt.hist(vals,linspace(min(vals),max(vals),300))
+        plt.xlabel("Veritle Axis, Hit Location (mm)")
+        plt.ylabel("Number of Hits (count)")
+        #plt.title("Hits Line of Best Fit at x=%s"%sensor)
 
     plt.subplot(224)
     plt.axis("off")
     plt.annotate(xy=(.3,.8),s="%s Events"%events)
-    plt.annotate(xy=(.3,.7),s="Sensor is at %smm"%sensor)
+
     plt.annotate(xy=(.3,.6),s="Resolution is %s"%resolution)
-    plt.annotate(xy=(.3,.5),s="Sensor Radlen is %.04f"%scoringPlane.radlen)
+    if scoringPlane is not None:
+        plt.annotate(xy=(.3,.7),s="Sensor is at %smm"%sensor)
+        plt.annotate(xy=(.3,.5),s="Sensor Radlen is %.04f"%scoringPlane.radlen)
     plt.show()
 

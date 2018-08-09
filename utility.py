@@ -20,9 +20,19 @@ def transform_to_origin(input):
     return [i-minimum for i in input]
 
 def loadPlateFile(url):
-    with open("plates.json") as f:
+    with open(url) as f:
         plates=json.loads(f.read())
-    return [Plate(plate['position'],plate['radlen'],False) for plate in plates]
+    output=[]
+    for plate in plates:
+        myPlate=None
+        if 'radlen' in plate:
+            myPlate=Plate(plate['position'],plate['radlen'],False)
+        elif 'composition' in plate:
+            myPlate=Plate(plate['position'],getComposition(plate['composition']),False)
+        else:
+            myPlate=Plate(plate['position'],0,False)            
+        output.append(myPlate)
+    return output
 
 def prepPlates(plates,scoringPlane):
     output=[plate for plate in plates]
@@ -117,6 +127,9 @@ def generalPlotting(title, xlabel,ylabel,plt,file_name=None):
 
 def getComposition(materials):
     #materials should be an array with 2-tuples, (material, thickness)
+    #or just a tuple.
+    if type(materials) is tuple:
+        return getRadlen(materials[0],materials[1])
     radlen=0
     for material in materials:
         radlen+=getRadlen(material[0],material[1])
@@ -124,7 +137,7 @@ def getComposition(materials):
     
 KAPTON=28.6  #cm
 SILICON=9.37 #cm
-def getRadlen(thickness, material):
+def getRadlen(material,thickness):
     material=material.lower()
     if material == "kapton":
         return thickness/KAPTON

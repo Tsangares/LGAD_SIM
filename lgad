@@ -4,6 +4,7 @@ types=['sensor','single']
 parser = argparse.ArgumentParser(description="LGAD sensor simulator.")
 parser.add_argument('type', metavar='type', type=str, nargs='?', help='Type of simulation to run, acceptable values are %s. Default is "single"'%types)
 parser.add_argument('-n','-e', metavar="events", type=int, nargs='?', help="Number of events to run. Default is 300", default=300)
+parser.add_argument('--config', metavar="config", dest="config", type=str, nargs='?', help="URL to the plates config file. Defaults to plates.json", default="plates.json")
 parser.add_argument('--toggle','-t', dest="toggle", metavar="toggle", type=int, nargs='+', help="Give the index range of plates to include in the line of best fit. Note: The scorin plane/sensor is included in this index. Give it in the form of a tuple of a closed set, like the command \"lgad -t 0 2\" will include plates, 0, 1 and 2 into the line of best fit.", default=None)
 parser.add_argument('--no-scatter', dest="scatter", action="store_false", help="Enable coulomb scattering. Default True", default=None)
 parser.add_argument('--scatter', dest="scatter", action="store_true", help="Enable coulomb scattering. Default True", default=None)
@@ -24,15 +25,15 @@ except Exception:
 if args.type is None:
     print("No type was given, defaulting to single.")
 elif args.type == "single":
-    simulate(Plate(args.pos,args.thickness,True),events=args.n, plt=True, use=args.scatter)
+    simulate(Plate(args.pos,args.thickness,True),events=args.n, plt=True, use=args.scatter,config=args.config)
 elif args.type == "sensor":
     if args.toggle is None:
-        moving_plates(events=args.n, sensor_radlen=args.thickness, use=args.scatter)
+        moving_plates(events=args.n, sensor_radlen=args.thickness, use=args.scatter,config=args.config)
     else:
         toggle=args.toggle
         toggle[1]+=1
-        moving_plate(events=args.n, sensor_radlen=args.thickness, toggle=toggle, use=args.scatter)
+        moving_plate(events=args.n, sensor_radlen=args.thickness, toggle=toggle, use=args.scatter,config=args.config)
 elif args.type == "thick":
-    thick(events=args.n, sensor_radlen=args.thickness, toggle=None, use=args.scatter)
+    thick(events=args.n, sensor_radlen=args.thickness, toggle=None, use=args.scatter,config=args.config)
 else: 
     print("Unknown type given. Please use one of the following: %s"%(types))

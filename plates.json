@@ -1,18 +1,15 @@
 [
     {
-	"thickness": 0.300,
 	"resolution": 0.0051826,
 	"radlen": 0.00076,
 	"position": 0
     },
     {
-	"thickness": 0.300,
 	"resolution": 0.0051826,
 	"radlen": 0.00076,
 	"position": 153
     },
     {
-	"thickness": 0.300,
 	"resolution": 0.0051826,
 	"radlen": 0.00076,
 	"position": 305
@@ -20,18 +17,69 @@
     {
 	"thickness": 0.300,
 	"resolution": 0.0051826,
+	"position": 200,
+	"composition": [
+	    [ "silicon", 0.003 ]
+	]
+    },
+    {
+	"thickness": 0.300,
+	"position": 200,
+	"composition": [
+	    [ "silicon", 0.003 ]
+	]
+    },
+    {
+	"thickness": 0.300,
+	"position": 200,
+	"composition": [
+	    [ "silicon", 0.003 ]
+	]
+    },
+    {
+	"thickness": 0.300,
+	"position": 200,
+	"composition": [
+	    [ "silicon", 0.003 ]
+	]
+    },
+        {
+	"thickness": 0.300,
+	"position": 200,
+	"composition": [
+	    [ "silicon", 0.003 ]
+	]
+    },
+    {
+	"thickness": 0.300,
+	"position": 200,
+	"composition": [
+	    [ "silicon", 0.003 ]
+	]
+    },
+    {
+	"thickness": 0.300,
+	"position": 200,
+	"composition": [
+	    [ "silicon", 0.003 ]
+	]
+    },
+    {
+	"thickness": 0.300,
+	"position": 200,
+	"composition": [
+	    [ "silicon", 0.003 ]
+	]
+    },
+    {
 	"radlen": 0.00076,
 	"position": 635
     },
     {
-	"thickness": 0.300,
-	"resolution": 0.0051826,
 	"radlen": 0.00076,
 	"position": 787
     },
     {
-	"thickness": 0.300,
-	"resolution": 0.0051826,
 	"radlen": 0.00076,
 	"position": 939
     }
