@@ -35,6 +35,7 @@ def batchSim(inputs,events,testRange,radlength,config):
             scoringPlane=Plate(test,radlength)
             plates=getPlates(config, scoringPlane)
             results,RMS=simulate(scoringPlane,events,plates,use=use,toggle=toggle)
+            #RMS=getRMS(results
             thisSim.append(RMS)
         outputs.append(thisSim)
         stop = timeit.default_timer()

@@ -86,6 +86,7 @@ def getEvent(positions, radlengths, resolutions, testPoint, togglePlates, useCou
     risidual    = getRisidual ( positions, measurement, testPoint, togglePlates , realTrack)
     return Result(realTrack,measurement,score,risidual,positions)
 
+
 #scoringPlane is of the type Plate.
 def simulate(scoringPlane=None, events=1,plates=None, resolution=.0051826, plt=None, toggle=None, title=None, use=True, threads=8):
     if plates is None:
@@ -111,6 +112,18 @@ def simulate(scoringPlane=None, events=1,plates=None, resolution=.0051826, plt=N
         plotSingle(results, scoringPlane, events, resolution)
         
     return results, getRMS(risiduals)
+
+#scoringPlane is of the type Plate.
+def extractRMS(scoringPlane,results,plates,toggle,threads=8):
+    if toggle is None: toggle=(0,len(plates))
+    positions=[ plate.pos for plate in plates ]
+    testPoint=scoringPlane.pos
+    params=zip(repeat(positions),results,repeat(testPoint),repeat(toggle))
+    with ThreadPool(threads) as pool:
+        residuals=pool.starmap(getRisidualFromResult,params)
+    return getRMS(residuals)
+
+
 
 def plotSingle(res, scoringPlane, events, resolution):
     import matplotlib.pyplot as plt

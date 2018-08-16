@@ -34,6 +34,19 @@ def loadPlateFile(url):
         output.append(myPlate)
     return output
 
+def compPlates(plates):
+    output=[]
+    for plate in plates:
+        myPlate=None
+        if 'radlen' in plate:
+            myPlate=Plate(plate['position'],plate['radlen'],False)
+        elif 'composition' in plate:
+            myPlate=Plate(plate['position'],getComposition(plate['composition']),False)
+        else:
+            myPlate=Plate(plate['position'],0,False)            
+        output.append(myPlate)
+    return output
+
 def prepPlates(plates,scoringPlane):
     output=[plate for plate in plates]
     output.append(scoringPlane)
@@ -67,47 +80,90 @@ def getRMS(risiduals):
     b=sum(risiduals)
     b=b*b
     c=sum([x*x for x in risiduals])/a
-    return sqrt(c - (b/a)**2)
+    d=(b/a)**2
+    try:
+        return sqrt(c - d)
+    except Exception:
+        print("rms %.04f std %.04f"%(c,d))
+        print("residuals %s"%risiduals)
+        return sqrt(c - d)
 
 #currently going to assume, 3 plates on the left, 3 on the right with a sensor in the middle.
 def getAdvancedRMS(results, plates, scoringPlane):
     mid=int(len(plates)/2)
-    left=plates[:mid]
-    right=plates[mid:]
-    #if len(left)==len(right) and left != right: print("yay!")
-    #Calculating risiduals uses the functions:
-    # - getTestPoint(x,y,testPoint,toggle,plt=None)
-    # - getRisidual( x, measured_tracks, testPoint, toggle, real_tracks )
-    #Recalculate the risiduals by using getTestPoint with custom toggle
-    #Then the same with getRisidual
+
+    leftPos = [plate.pos for plate in plates[:mid]]
+    rightPos= [plate.pos for plate in plates[mid:]]
+    
     leftRisiduals=[]
     rightRisiduals=[]
+    
+    leftPoints=[]
+    rightPoints=[]
+    
+    realPoints =[]
+    
+    x=scoringPlane.pos
     for result in results:
-        leftToggle=(None,mid)
-        rightToggle=(mid,None)
-        left=getRisidual(result.positions,result.measurement,scoringPlane.position, leftToggle,result.realTrack)
-        right=getRisidual(result.positions,result.measurement,scoringPlane.position, rightToggle,result.realTrack)
-        leftRisiduals.append(left)
-        rightRisiduals.append(right)
+        b,m=polyfit(leftPos, result.measurement[:mid], 1)
+        leftPoint=m*x+b
+        b,m=polyfit(rightPos,result.measurement[-mid:], 1)
+        rightPoint=m*x+b
 
-    # //
+        leftPoints.append(leftPoint)
+        rightPoints.append(rightPoint)
+
+        realPosition=result.realTrack[mid-1]
+        realPoints.append(realPosition)
+
+        leftRisiduals.append(leftPoint-realPosition)
+        rightRisiduals.append(rightPoint-realPosition)
+
     leftSigma=getRMS(leftRisiduals)
     rightSigma=getRMS(rightRisiduals)
-    return leftSigma, rightSigma
+    
+    leftS=1/(leftSigma*leftSigma) #helper values 1/s^2
+    rightS=1/(rightSigma*rightSigma)
+    
+    newResiduals=[]
+    for left,right,realPoint in zip(leftPoints,rightPoints,realPoints):
+        newPoint=(left*leftS + right*rightS) / (leftS + rightS)
+        newResiduals.append(newPoint-realPoint)
+
+    return getRMS(newResiduals)
+
     
 
+def getRisidualFromResult(positions,res,testPoint,toggle,):
+    return getRisidual(positions,res.measurement,testPoint,toggle,res.realTrack)
 
+'''
+#make it easy to get residuals from the result object to make simulation faster.
+#We should be getting residuals after the fact because of all the different ways of calculating the reconstructed point.
+def getResiduals(results):
+    residuals=[]
+    for result in results:
+'''     
+        
 def getRisidual( x, measured_tracks, testPoint, toggle, real_tracks ):
-    inx=x[toggle[0]:toggle[1]]
-    iny=measured_tracks[toggle[0]:toggle[1]]
-    #print(len(inx),len(iny))
-    #    b,m=polyfit(inx,iny, 1)
     b,m=polyfit(x[toggle[0]:toggle[1]],measured_tracks[toggle[0]:toggle[1]], 1)
     pred_y=m*testPoint+b
     for point,real_y in zip(x,real_tracks):
         if point==testPoint:
             return real_y-pred_y
     raise Exception("The test point given to calculate the risidual was not specified in either the config file or the scoring plane.\n%s:%s"%(testPoint, x))
+
+def getManyResiduals( allPos, fitPos, reconTracks, realTracks, testPoints):
+    b,m=polyfit(fitPos, reconTracks, 1)
+    residuals=[]
+    for testPoint in testPoints:
+        pred_y=m*testPoint+b
+        for point,real_y in zip(allPos,realTracks):
+            if point==testPoint:
+                residuals.append(real_y-pred_y)
+                continue
+    return residuals
+
 
 # Plotting for json formatted like:
 # [ [x_0,y_0],[x_1,y_1],...,[x_n,y_n] ]
