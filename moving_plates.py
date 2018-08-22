@@ -10,6 +10,12 @@ except Exception:
     from lgad.utility import *
 
 
+'''
+
+In this simulation we have a sensor that moves left to right.
+We use this to test the properties of scattering and turning off plates.
+'''
+
 def plotData(testRange,data,radlen,use,events):
     total=[]
     #Add error handling if the data is of the wrong format.

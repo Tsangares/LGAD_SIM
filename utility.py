@@ -104,6 +104,7 @@ def getAdvancedRMS(results, plates, scoringPlane):
     realPoints =[]
     
     x=scoringPlane.pos
+
     for result in results:
         b,m=polyfit(leftPos, result.measurement[:mid], 1)
         leftPoint=m*x+b
@@ -112,8 +113,8 @@ def getAdvancedRMS(results, plates, scoringPlane):
 
         leftPoints.append(leftPoint)
         rightPoints.append(rightPoint)
-
-        realPosition=result.realTrack[mid-1]
+        
+        realPosition=result.realTrack[mid]
         realPoints.append(realPosition)
 
         leftRisiduals.append(leftPoint-realPosition)

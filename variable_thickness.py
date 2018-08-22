@@ -4,7 +4,7 @@ import json
 from utility import *
 from simulation import *
 
-config="plates.json"
+config="eightPlates.json"
 EVENTS=50000
 
 rawPlates=None
@@ -63,7 +63,8 @@ def testPlates(thickness,plates):
         print("\rsim done.")
     return rms
 
-y=[testPlates(thick,rawPlates) for thick in linspace(.003,.005,10)]
+#thicknesses
+y=[testPlates(thick,rawPlates) for thick in []]
 x=getPositions(rawPlates)
 with open("test.json", 'w+') as f:
     f.write(json.dumps({'y': y, 'x': x}))
