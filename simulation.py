@@ -1,3 +1,4 @@
+import matplotlib
 from operator import itemgetter, attrgetter
 import numpy as np
 from numpy import linspace
@@ -42,16 +43,19 @@ Eight plates of 300-500 micron silicon evenly spaced.
 Set resolution to zero, the RMS should grow by sqrt(2)*rms(plate1);
 '''
         
-def getScatterRMS(thickness,velocity=BE):
-    if thickness == 0: return 0
+def getScatterRMS(radlength,velocity=BE):
+    if radlength == 0: return 0
     v=velocity
-    out=(13.6)/(v) * sqrt(thickness) * (1+.088*log(thickness))
+    out=(13.6)/(v) * sqrt(radlength) * (1+.088*log(radlength))
     return out
 
-def getScatterAngle(thickness, use=True):
+def getScatterAngle(radlength, use=True):
     if use is False: return 0
-    rms=getScatterRMS(thickness)
-    theta=normal(0,rms)
+    rms=getScatterRMS(radlength)
+    try:
+        theta=normal(0,rms)
+    except Exception:
+        return normal(0,0)
     return theta
 #14.6MeV/p /sqrt(radlen)    
 def getPosition(positions,radlens, use=True):
@@ -108,10 +112,10 @@ def simulate(scoringPlane=None, events=1,plates=None, resolution=.0051826, plt=N
     #Currently debugging a lot of risidual RMS so it is prioriy;
     #Thats why simulate() retuns a tuple instead of a single object.
     risiduals = [result.risidual for result in results]
+    rms=getRMS(risiduals)
     if plt is not None:
-        plotSingle(results, scoringPlane, events, resolution)
-        
-    return results, getRMS(risiduals)
+        plotSingle(results, scoringPlane, events, rms)
+    return results, rms
 
 #scoringPlane is of the type Plate.
 def extractRMS(scoringPlane,results,plates,toggle,threads=8):
@@ -140,35 +144,39 @@ def plotSingle(res, scoringPlane, events, resolution):
         positions+=_positions[i]
         real_track+=(_real_track[i])
         measured_track+=(_measured_track[i])
-    vals=[datum.score for datum in res]
+    vals=[datum.risidual for datum in res]
+    
+
+
+    matplotlib.rcParams.update({'font.size': 14, 'font.family': 'Ubuntu'})
 
     plt.subplot(221)
     plt.plot(positions, real_track, marker='.', linestyle='None')
     if scoringPlane is not None:
         plt.plot([sensor,sensor], [min(measured_track),max(measured_track)], 'r')
-    plt.title("Real Track")
+    plt.title("Real Track",fontstyle='italic')
     plt.ylabel("Hit Location (mm)")
     
     plt.subplot(222)
     plt.plot(positions, measured_track,marker='.', linestyle='None')
     if scoringPlane is not None:
         plt.plot([sensor,sensor], [min(measured_track),max(measured_track)], 'r')
-    plt.title("Measured Track")
+    plt.title("Measured Track",fontstyle='italic')
     plt.xlabel("Plate Positions (mm)")
     if scoringPlane is not None:
         plt.subplot(223)
-        plt.hist(vals,linspace(min(vals),max(vals),300))
-        plt.xlabel("Veritle Axis, Hit Location (mm)")
-        plt.ylabel("Number of Hits (count)")
+        plt.hist(vals,linspace(min(vals),max(vals),100))
+        plt.xlabel("Residual - Distance from Actual to Reconstructed (mm)")
+        plt.ylabel("Number of Particles")
         #plt.title("Hits Line of Best Fit at x=%s"%sensor)
 
     plt.subplot(224)
     plt.axis("off")
     plt.annotate(xy=(.3,.8),s="%s Events"%events)
 
-    plt.annotate(xy=(.3,.6),s="Resolution is %s"%resolution)
+    plt.annotate(xy=(.3,.6),s="Resolution is %.03e"%resolution)
     if scoringPlane is not None:
         plt.annotate(xy=(.3,.7),s="Sensor is at %smm"%sensor)
-        plt.annotate(xy=(.3,.5),s="Sensor Radlen is %.04f"%scoringPlane.radlen)
+        plt.annotate(xy=(.3,.5),s="Sensor Radlen is %.03e"%scoringPlane.radlen)
     plt.show()
 

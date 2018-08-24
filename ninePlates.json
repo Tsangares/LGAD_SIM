@@ -16,59 +16,35 @@
     },
     {
 	"position": 341.666,
-	"variable": true,
-	"composition": [
-	    [ "silicon", 0.003 ]
-	]
+	"variable": true
     },
     {
 	"position": 378.333,
-	"variable": true,
-	"composition": [
-	    [ "silicon", 0.003 ]
-	]
+	"variable": true
     },
     {
 	"position": 415,
-	"variable": true,
-	"composition": [
-	    [ "silicon", 0.003 ]
-	]
+	"variable": true
     },
     {
 	"position": 451.666,
-	"variable": true,
-	"composition": [
-	    [ "silicon", 0.003 ]
-	]
+	"variable": true
     },
-        {
+    {
 	"position": 488.333,
-	"variable": true,
-	"composition": [
-	    [ "silicon", 0.003 ]
-	]
+	"variable": true
     },
     {
 	"position": 525,
-	"variable": true,
-	"composition": [
-	    [ "silicon", 0.003 ]
-	]
+	"variable": true
     },
     {
 	"position": 561.666,
-	"variable": true,
-	"composition": [
-	    [ "silicon", 0.003 ]
-	]
+	"variable": true
     },
     {
 	"position": 598.333,
-	"variable": true,
-	"composition": [
-	    [ "silicon", 0.003 ]
-	]
+	"variable": true
     },
     {
 	"radlen": 0.00076,

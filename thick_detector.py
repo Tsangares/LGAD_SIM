@@ -49,6 +49,7 @@ def thick(plate_min=305, plate_max=635, events=300, sensor_radlen=0.0,verbose=Tr
         timeLeft=mean*(len(test_range)-len(times))
         print("Finised sensor at %.04fmm in %.03f seconds with %.03f seconds left." %(test,(stop-start),timeLeft))        
     print("Finished gathering data.")
+    matplotlib.rcParams.update({'font.size': 14, 'font.family': 'Ubuntu'})
     plt.subplot()
     plt.title("Averaging Left and Right Lines; Thickness of .1 radlen")
     plt.plot(test_range,normal,label="old reconstruction",linestyle="None",marker="8")

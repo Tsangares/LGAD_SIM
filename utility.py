@@ -82,11 +82,11 @@ def getRMS(risiduals):
     c=sum([x*x for x in risiduals])/a
     d=(b/a)**2
     try:
-        return sqrt(c - d)
+        return sqrt(c)
     except Exception:
         print("rms %.04f std %.04f"%(c,d))
-        print("residuals %s"%risiduals)
-        return sqrt(c - d)
+        #print("residuals %s"%risiduals)
+        return sqrt(c)
 
 #currently going to assume, 3 plates on the left, 3 on the right with a sensor in the middle.
 def getAdvancedRMS(results, plates, scoringPlane):
