@@ -29,7 +29,8 @@ def humanLabel(label):
 def plotData(testRange,data,radlen,use,events):
     total=[]
     #Add error handling if the data is of the wrong format.
-    matplotlib.rcParams.update({'font.size': 14, 'font.family': 'Ubuntu'})
+    matplotlib.rcParams.update({'font.size': 14, 'font.family': 'Ubuntu','axes.titlesize': 14})
+
     for datum,label in data:
         total+=(datum)
         plt.plot(testRange,datum,linestyle='None', marker='o', label=humanLabel(label))
