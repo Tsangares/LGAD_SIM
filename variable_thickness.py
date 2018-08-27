@@ -31,7 +31,7 @@ def setThickness(thick,plates):
                 plate['radlen']=thick
     return compPlates(plates)
 
-def testPlates(thickness,plates,events):
+def testPlates(thickness,plates,events,left=True,right=True):
     print("\nLooking at position %.04f"%thickness)
     resolutions=[]
     positions=getPositions(plates)
@@ -49,12 +49,20 @@ def testPlates(thickness,plates,events):
         
     residuals=[]
     rms=[[] for i in positions]
-    fitPos=allPositions[:3]+allPositions[-3:]
+    fitPos=[]
+    if left:
+        fitPos+=allPositions[:3]
+    if right:
+        fitPos+=allPositions[-3:]
     #fitPos=allPositions[-3:]
     for reconTrack,realTrack in zip(reconstructed,real):
         #reconTrack needs to be only the ones that will be in the line of best fit.
         #fitPos needs to be the allPositions that will be in the line of best fit.
-        newReconTrack=reconTrack[:3]+reconTrack[-3:]
+        newReconTrack=[]
+        if left:
+            newReconTrack+=reconTrack[:3]
+        if right:
+            newReconTrack+=reconTrack[-3:]
         #newReconTrack=reconTrack[-3:] #This is testing just the left plates
         residuals.append(getManyResiduals(allPositions,fitPos,newReconTrack,realTrack,positions))
         
@@ -80,3 +88,39 @@ def variable_thickness(events=10000,config="eightPlates.json",sizes=[.00001,.003
     plt.xlabel("Positions")
     plt.ylabel("rms of plates")
     plt.show()
+
+def robustPloting(events=50000,config="eightPlates.json",sizes=[.00001,.0030,.0050,.0100,.0150,.02]):
+    rawPlates=None
+    #sizes=linespace(.003,.005,10)
+    with open(config) as f:
+        rawPlates=json.loads(f.read())
+    allEight=[testPlates(thick,rawPlates,events) for thick in sizes]
+    left=[testPlates(thick,rawPlates,events,right=False) for thick in sizes]
+    right=[testPlates(thick,rawPlates,events,left=False) for thick in sizes]
+    x=getPositions(rawPlates)
+
+    plt.suptitle("Varying Thickness of Six Plates in Telescope's Gap", fontsize=16, style="italic")
+    plt.subplot(2,1,1)
+    for _y,label in zip(allEight[::-1],sizes[::-1]):
+        plt.plot(x,_y,marker='8', label="%.04f"%label)
+
+    plt.title("Using All Six Plates for Reconstruction")
+    plt.ylabel("RMS of Residuals (mm)")
+
+    plt.subplot(2,2,3)
+    for _y,label in zip(left[::-1],sizes[::-1]):
+        plt.plot(x,_y,marker='8', label="%.03f radlens"%label)
+        
+    plt.legend(loc='auto')
+    plt.title("Using Left Three Plates")
+    plt.ylabel("RMS of Residuals (mm)")
+    plt.xlabel("Plate Positions (mm)")
+    
+    plt.subplot(2,2,4)
+    for _y,label in zip(right[::-1],sizes[::-1]):
+        plt.plot(x,_y,marker='8', label="%.03f"%label)
+        plt.title("Using Right Three Plates")
+    plt.xlabel("Plate Positions (mm)")
+    plt.show()
+
+robustPloting()

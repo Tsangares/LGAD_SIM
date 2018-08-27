@@ -92,7 +92,7 @@ def getEvent(positions, radlengths, resolutions, testPoint, togglePlates, useCou
 
 
 #scoringPlane is of the type Plate.
-def simulate(scoringPlane=None, events=1,plates=None, resolution=.0051826, plt=None, toggle=None, title=None, use=True, threads=8):
+def simulate(scoringPlane=None, events=1,plates=None, resolution=.00471, plt=None, toggle=None, title=None, use=True, threads=8):
     if plates is None:
         raise Exception("Please supply the simulation with plates using the commands loadPlateFile, getPlates")
     if toggle is None: toggle=(0,len(plates))
@@ -104,6 +104,10 @@ def simulate(scoringPlane=None, events=1,plates=None, resolution=.0051826, plt=N
     # //
     sensorPosition=0
     if scoringPlane is not None: sensorPosition=scoringPlane.pos
+    if scoringPlane is None:
+        for plate in plates:
+            if plate.isScoringPlane:
+                sensorPosition=plate.pos
     params=zip(pos,repeat(radlens),repeat(res),repeat(sensorPosition),repeat(toggle),repeat(use))
     
     with ThreadPool(threads) as pool:
@@ -113,6 +117,7 @@ def simulate(scoringPlane=None, events=1,plates=None, resolution=.0051826, plt=N
     #Thats why simulate() retuns a tuple instead of a single object.
     risiduals = [result.risidual for result in results]
     rms=getRMS(risiduals)
+
     if plt is not None:
         plotSingle(results, scoringPlane, events, rms)
     return results, rms

@@ -154,6 +154,8 @@ def getRisidual( x, measured_tracks, testPoint, toggle, real_tracks ):
             return real_y-pred_y
     raise Exception("The test point given to calculate the risidual was not specified in either the config file or the scoring plane.\n%s:%s"%(testPoint, x))
 
+#def getFitPos()
+
 def getManyResiduals( allPos, fitPos, reconTracks, realTracks, testPoints):
     b,m=polyfit(fitPos, reconTracks, 1)
     residuals=[]
