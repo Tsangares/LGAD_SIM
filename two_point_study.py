@@ -1,10 +1,11 @@
+
 import matplotlib
 from numpy.polynomial.polynomial import polyfit
 import simulation as sim
 import matplotlib.pyplot as plt
 from numpy import linspace
 from utility import *
-events=1000
+events=10000
 rawPlates=loadPlateFile("plates.json")
 RMS=[]
 yuzhan=.004295
@@ -12,8 +13,8 @@ test_points=linspace(305,635,10)
 
 def getTwoPoint(results,scoringPlane,s):
     positions=results[0].positions
-    plate3=positions[2]
-    plate2=positions[1]
+    plate3=positions[1]
+    plate2=positions[0]
     a=plate3-scoringPlane.pos
     d=plate3-plate2
     print(a)
@@ -28,7 +29,7 @@ for test in test_points:
     scoringPlane=Plate(test,0.0,True)
     myPlates=prepPlates(rawPlates,scoringPlane)
     resolution=.00471
-    results,rms=sim.simulate(plates=myPlates,events=events,toggle=(1,3))
+    results,rms=sim.simulate(plates=myPlates,events=events,toggle=(0,2),use=False)
     RMS.append(rms)
     print("RMS: %.05f"%rms)
     tp=getTwoPoint(results,scoringPlane,resolution)
